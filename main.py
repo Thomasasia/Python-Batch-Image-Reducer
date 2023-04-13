@@ -6,7 +6,8 @@ import os
 # Setting up arguments
 parser = argparse.ArgumentParser(
                     prog='Batch Image Reducer',
-                    description='This program reduces a batch of images by decreasing the resolution, either to meet a max file size or to fit the images within a certain kB budget.')
+                    description='This program reduces a batch of images by decreasing the resolution, either to meet a max file size or to fit the images within a certain kB budget.',
+                    epilog="Because png compression generally gets less efficient with smaller images, the final batch size may be greater than the budget. It should not be more than a 20% difference unless you're making really tiny images.")
 parser.add_argument('input', help='input folder')
 parser.add_argument('output', help='output folder')
 parser.add_argument('-b', '--budget', type=int, default = 50000, help='The max size of the output in kilobytes. Default is 50000 (50 MB)')
@@ -156,7 +157,10 @@ os.rmdir(workingdir)
 
 print("Image reduction successful!")
 print("Fun stats:")
+print("\tMB Budget:" + str(round((max_filesize /1000000) * len(files),3)))
 print("\tOld batch size: " + str(round(total_old / 1000000,2)) + "MB")
 print("\tNew batch size: " + str(round(total_new / 1000000,2)) + "MB")
+print("\tAverage old file size: " + str(round(total_old / len(files) / 1000,2)) + "kB")
+print("\tAverage new file size: " + str(round(total_new / len(files) / 1000,2)) + "kB")
 print("\tTotal space saved: " + str(round(total_reduction / 1000000,2)) + "MB")
 print("\tAverage image reduction: " + str(round(total_reduction / len(files) / 1000,2)) + "kB")
