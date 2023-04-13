@@ -85,9 +85,19 @@ if max_filesize == 0:
 
 global total_reduction
 total_reduction= 0
+global total_old
+total_old = 0
+global total_new
+total_new = 0
 
 def calculate_reduction(path1, path2):
-    sizediff = os.path.getsize(path1) - os.path.getsize(path2)
+    size1 = os.path.getsize(path1)
+    size2 = os.path.getsize(path2)
+    sizediff = size1 - size2
+    global total_old
+    global total_new
+    total_old += size1
+    total_new += size2
     global total_reduction
     total_reduction += sizediff
 
@@ -134,5 +144,8 @@ with alive_bar(len(files), title='Resizing Images', length=40, bar='filling', sp
 os.rmdir(workingdir)
 
 print("Image reduction successful!")
-print("Total space saved: " + str(round(total_reduction / 1000000,2)) + "MB")
-print("Average image reduction: " + str(round(total_reduction / len(files) / 1000,2)) + "kB")
+print("Fun stats:")
+print("\tOld batch size: " + str(round(total_old,2)) + "MB")
+print("\tNew batch size: " + str(round(total_new,2)) + "MB")
+print("\tTotal space saved: " + str(round(total_reduction / 1000000,2)) + "MB")
+print("\tAverage image reduction: " + str(round(total_reduction / len(files) / 1000,2)) + "kB")
