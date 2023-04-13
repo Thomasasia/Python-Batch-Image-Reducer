@@ -10,7 +10,7 @@ import os
 # 16 bit color
 parser = argparse.ArgumentParser(
                     prog='Batch Image Reducer',
-                    description='This program reduces a batch of images by decreasing the resolution, either to meet a max file size or to bit the images within a certain kB budget.')
+                    description='This program reduces a batch of images by decreasing the resolution, either to meet a max file size or to fit the images within a certain kB budget.')
 parser.add_argument('input', help='input folder')
 parser.add_argument('output', help='output folder')
 parser.add_argument('-b', '--budget', type=int, default = 50000, help='The max size of the output in kilobytes. Default is 50000 (50 MB)')
@@ -19,7 +19,8 @@ parser.add_argument('-r', '--recursive', action='store_true', help='recursively 
 
 args = vars(parser.parse_args())
 
-print(args)
+
+
 # format directories, to enforce unix style
 def format_directory_path(path):
     lpath = list(path)
@@ -49,7 +50,8 @@ workingdir = output_path + '/workingdir/'
 if not os.path.exists(workingdir):
     os.makedirs(workingdir)
 else:
-    raise Exception(workingdir + " exists, please rename this directory to avoid loss of data")
+    #raise Exception(workingdir + " exists, please rename this directory to avoid loss of data")
+    pass
 
 from PIL import Image
 
@@ -59,8 +61,6 @@ with alive_bar(len(files), title='Converting images', length=40, bar='filling', 
     for path in files:
         im = Image.open(r''+path)
         name = os.path.basename(path).split('.')[0]
-        print(os.path.basename(path))
-        print(os.path.basename(path).split('.'))
         image_names.append(name)
         newpath = workingdir + name + '.png'
         im.save(r''+newpath)
@@ -92,6 +92,7 @@ with alive_bar(len(files), title='Resizing Images', length=40, bar='filling', sp
         if os.path.getsize(path) <= max_filesize:
             im.save(newpath)
             im.close()
+            os.remove(newpaths[i])
             bar()
             continue
 
@@ -102,6 +103,7 @@ with alive_bar(len(files), title='Resizing Images', length=40, bar='filling', sp
         if im.size[0] * im.size[1] <= int(ideal_pixelcount):
             im.save(newpath)
             im.close()
+            os.remove(newpaths[i])
             bar()
             continue
 
@@ -113,13 +115,11 @@ with alive_bar(len(files), title='Resizing Images', length=40, bar='filling', sp
         newsize = (int(x),int(y))
         im = im.resize(newsize)
         im.save(newpath)
-        print(newpath)
         im.close()
+        os.remove(newpaths[i])
         bar()
 
 
-with alive_bar(len(files), title='Cleaning up', length=40, bar='filling', spinner='waves2', spinner_length = 7, stats=True) as bar:
-    for path in newpaths:
-        os.remove(path)
-        bar()
-    os.rmdir(workingdir)
+os.rmdir(workingdir)
+
+print("Image reduction successful!")
