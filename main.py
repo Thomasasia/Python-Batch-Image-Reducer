@@ -57,7 +57,7 @@ from PIL import Image
 
 newpaths=[]
 image_names = []
-with alive_bar(len(files), title='Converting images', length=40, bar='filling', spinner='waves2', spinner_length = 7, stats=True) as bar:
+with alive_bar(len(files), title='Converting images', length=40, bar='bubbles', spinner='waves2', spinner_length = 15, stats=True) as bar:
     for path in files:
         im = Image.open(r''+path)
         name = os.path.basename(path).split('.')[0]
@@ -69,7 +69,7 @@ with alive_bar(len(files), title='Converting images', length=40, bar='filling', 
         bar()
 
 pixel_sizes = []
-with alive_bar(len(files), title='Calculating Pixel Compression', length=40, bar='filling', spinner='waves2', spinner_length = 7, stats=True) as bar:
+with alive_bar(len(files), title='Calculating Pixel Compression', length=40, bar='checks', spinner='stars', spinner_length = 6, stats=True) as bar:
     for path in newpaths:
         file_size = os.path.getsize(path)
         pixels = 0
@@ -101,7 +101,7 @@ def calculate_reduction(path1, path2):
     global total_reduction
     total_reduction += sizediff
 
-with alive_bar(len(files), title='Resizing Images', length=40, bar='filling', spinner='waves2', spinner_length = 7, stats=True) as bar:
+with alive_bar(len(files), title='Resizing Images', length=40, bar='filling', spinner='radioactive', spinner_length = 11, stats=True) as bar:
     for i in range(len(newpaths)):
         path = newpaths[i]
         pixel_size = pixel_sizes[i]
@@ -145,7 +145,7 @@ os.rmdir(workingdir)
 
 print("Image reduction successful!")
 print("Fun stats:")
-print("\tOld batch size: " + str(round(total_old,2)) + "MB")
-print("\tNew batch size: " + str(round(total_new,2)) + "MB")
+print("\tOld batch size: " + str(round(total_old / 1000000,2)) + "MB")
+print("\tNew batch size: " + str(round(total_new / 1000000,2)) + "MB")
 print("\tTotal space saved: " + str(round(total_reduction / 1000000,2)) + "MB")
 print("\tAverage image reduction: " + str(round(total_reduction / len(files) / 1000,2)) + "kB")
