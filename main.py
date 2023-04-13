@@ -10,8 +10,8 @@ parser = argparse.ArgumentParser(
                     epilog="Because png compression generally gets less efficient with smaller images, the final batch size may be greater than the budget. It should not be more than a 20% difference unless you're making really tiny images.")
 parser.add_argument('input', help='input folder')
 parser.add_argument('output', help='output folder')
-parser.add_argument('-b', '--budget', type=int, default = 50000, help='The max size of the output in kilobytes. Default is 50000 (50 MB)')
-parser.add_argument('-f', '--filesize', type=int, default=0, help='The max size of a single file in kilobytes. Setting this ignores the budget.')
+parser.add_argument('-b', '--budget', type=float, default = 50000, help='The max size of the output in kilobytes. Default is 50000 (50 MB)')
+parser.add_argument('-f', '--filesize', type=float, default=0, help='The max size of a single file in kilobytes. Setting this ignores the budget.')
 parser.add_argument('-r', '--recursive', action='store_true', help='recursively gets all images in subdirectories')
 
 args = vars(parser.parse_args())
