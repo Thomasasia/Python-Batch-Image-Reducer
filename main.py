@@ -33,7 +33,7 @@ input_path = format_directory_path(args['input'])
 output_path = format_directory_path(args['output'])
 
 # extensions are a regex for the supported file types. more can be added.
-extensions = ['*.[jJ][pP][gG]', '*.[jJ][pP][eE][gG]', '*.[pP][nN][gG]']
+extensions = ['*.[jJ][pP][gG]', '*.[jJ][pP][eE][gG]', '*.[pP][nN][gG]', '*.[gG][iI][fF]']
 
 # Search for images in the directory
 files = []
