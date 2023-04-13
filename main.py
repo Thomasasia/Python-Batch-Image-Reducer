@@ -1,5 +1,7 @@
 import argparse
 import glob
+from alive_progress import alive_bar
+import os
 #options:
 #input folder
 #output folder
@@ -34,6 +36,22 @@ output_path = format_directory_path(args['input'])
 extensions = ['*.[jJ][pP][gG]', '*.[jJ][pP][eE][gG]', '*.[pP][nN][gG]']
 files = []
 for e in extensions:
-    files += glob.glob(input_path + e,recursive = args['-r'])
+    if args['recursive']:
+        e = '**/' + e
+    files += glob.glob(input_path + e, recursive = args['recursive'])
 
-print(files)
+if not os.path.exists(output_path):
+    os.makedirs(output_path)
+workingdir = output_path + '/workingdir/')
+if not os.path.exists(workingdir):
+    os.makedirs(workingdir)
+else:
+    raise Exception(workingdir + " exists, please rename this directory to avoid loss of data")
+
+from PIL import Image
+
+for path in files:
+    im = Image.open(r''+path)
+    p = os.path.splitext(path)[0]
+    p = format_directory_path(p)
+    im.save(r''+p+'.png')
