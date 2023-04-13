@@ -4,4 +4,4 @@ This program reduces a batch of images by decreasing the resolution, either to m
 It does this by resizing the images, prioritizing accuracy over space and speed.
 It can also access images recursively through nested folders.
 
-Type -h or --help for a full list of arguments
+Type -h or --help for a full list of arguments.

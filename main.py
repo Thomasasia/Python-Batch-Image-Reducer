@@ -37,7 +37,7 @@ output_path = format_directory_path(args['output'])
 
 extensions = ['*.[jJ][pP][gG]', '*.[jJ][pP][eE][gG]', '*.[pP][nN][gG]']
 files = []
-with alive_bar(len(extensions), title='Discovering Images', length=10, bar='filling', unknown='waves2', spinner_length = 20) as bar:
+with alive_bar(len(extensions), title='Discovering Images', length=10, bar='filling', unknown='waves2', spinner_length = 20, stats=False) as bar:
     for e in extensions:
         if args['recursive']:
             e = '**/' + e
@@ -83,6 +83,14 @@ max_filesize = args['filesize'] * 1000
 if max_filesize == 0:
     max_filesize = budget / len(files) * 1000
 
+global total_reduction
+total_reduction= 0
+
+def calculate_reduction(path1, path2):
+    sizediff = os.path.getsize(path1) - os.path.getsize(path2)
+    global total_reduction
+    total_reduction += sizediff
+
 with alive_bar(len(files), title='Resizing Images', length=40, bar='filling', spinner='waves2', spinner_length = 7, stats=True) as bar:
     for i in range(len(newpaths)):
         path = newpaths[i]
@@ -92,6 +100,7 @@ with alive_bar(len(files), title='Resizing Images', length=40, bar='filling', sp
         if os.path.getsize(path) <= max_filesize:
             im.save(newpath)
             im.close()
+            calculate_reduction(files[i], newpath)
             os.remove(newpaths[i])
             bar()
             continue
@@ -103,6 +112,7 @@ with alive_bar(len(files), title='Resizing Images', length=40, bar='filling', sp
         if im.size[0] * im.size[1] <= int(ideal_pixelcount):
             im.save(newpath)
             im.close()
+            calculate_reduction(files[i], newpath)
             os.remove(newpaths[i])
             bar()
             continue
@@ -116,6 +126,7 @@ with alive_bar(len(files), title='Resizing Images', length=40, bar='filling', sp
         im = im.resize(newsize)
         im.save(newpath)
         im.close()
+        calculate_reduction(files[i], newpath)
         os.remove(newpaths[i])
         bar()
 
@@ -123,3 +134,5 @@ with alive_bar(len(files), title='Resizing Images', length=40, bar='filling', sp
 os.rmdir(workingdir)
 
 print("Image reduction successful!")
+print("Total space saved: " + str(round(total_reduction / 1000000,2)) + "MB")
+print("Average image reduction: " + str(round(total_reduction / len(files) / 1000,2)) + "kB")
