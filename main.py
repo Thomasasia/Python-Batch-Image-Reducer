@@ -56,21 +56,30 @@ else:
     pass
 
 from PIL import Image
+import PIL
 
 # convert image to PNG. It takes longer to do this before resizing, but it will make the resizing more accurate.
 # This could be skipped if the compression rate could be calculated or estimated differently.
 newpaths=[]
 image_names = []
+itr = 0
 with alive_bar(len(files), title='Converting images', length=40, bar='bubbles', spinner='waves2', spinner_length = 15, stats=True) as bar:
     for path in files:
-        im = Image.open(r''+path)
-        name = os.path.basename(path).split('.')[0]
-        image_names.append(name)
-        newpath = workingdir + name + '.png'
-        im.save(r''+newpath)
-        im.close()
-        newpaths.append(newpath)
-        bar()
+        try:
+            im = Image.open(r''+path)
+            nsplit = os.path.basename(path).split('.')
+            nsplit.pop()
+            name = ''.join(nsplit)
+            image_names.append(name)
+            newpath = workingdir + name + '.png'
+            im.save(r''+newpath)
+            im.close()
+            newpaths.append(newpath)
+            bar()
+            itr += 1
+        except PIL.UnidentifiedImageError:
+            files.remove(path)
+            bar()
 
 # Calculate the pixel compression. That is, how many bytes per pixel are used in the image.
 # this is different for each image, because pngs can compress more efficiently under certain circumstances.
@@ -115,7 +124,12 @@ with alive_bar(len(files), title='Resizing Images', length=40, bar='filling', sp
         path = newpaths[i]
         pixel_size = pixel_sizes[i]
         newpath = output_path + image_names[i] + '.png'
-        im = Image.open(path)
+        try:
+            im = Image.open(path)
+        except FileNotFoundError:
+            im.close()
+            bar()
+            continue
         # skip if the image is already small enough to be acceptable
         if os.path.getsize(path) <= max_filesize:
             im.save(newpath)
