@@ -2,12 +2,8 @@ import argparse
 import glob
 from alive_progress import alive_bar
 import os
-#options:
-#input folder
-#output folder
-# max file size (ignores batch size)
-# max batch size (default 50mb)
-# 16 bit color
+
+# Setting up arguments
 parser = argparse.ArgumentParser(
                     prog='Batch Image Reducer',
                     description='This program reduces a batch of images by decreasing the resolution, either to meet a max file size or to fit the images within a certain kB budget.')
@@ -35,15 +31,20 @@ def format_directory_path(path):
 input_path = format_directory_path(args['input'])
 output_path = format_directory_path(args['output'])
 
+# extensions are a regex for the supported file types. more can be added.
 extensions = ['*.[jJ][pP][gG]', '*.[jJ][pP][eE][gG]', '*.[pP][nN][gG]']
+
+# Search for images in the directory
 files = []
 with alive_bar(len(extensions), title='Discovering Images', length=10, bar='filling', unknown='waves2', spinner_length = 20, stats=False) as bar:
     for e in extensions:
         if args['recursive']:
+            # if it's recursive, the regex needs to be slightly different.
             e = '**/' + e
         files += glob.glob(input_path + e, recursive = args['recursive'])
         bar()
 
+# create output path, and a directory to store converted images into.
 if not os.path.exists(output_path):
     os.makedirs(output_path)
 workingdir = output_path + '/workingdir/'
@@ -55,6 +56,8 @@ else:
 
 from PIL import Image
 
+# convert image to PNG. It takes longer to do this before resizing, but it will make the resizing more accurate.
+# This could be skipped if the compression rate could be calculated or estimated differently.
 newpaths=[]
 image_names = []
 with alive_bar(len(files), title='Converting images', length=40, bar='bubbles', spinner='waves2', spinner_length = 15, stats=True) as bar:
@@ -68,6 +71,8 @@ with alive_bar(len(files), title='Converting images', length=40, bar='bubbles', 
         newpaths.append(newpath)
         bar()
 
+# Calculate the pixel compression. That is, how many bytes per pixel are used in the image.
+# this is different for each image, because pngs can compress more efficiently under certain circumstances.
 pixel_sizes = []
 with alive_bar(len(files), title='Calculating Pixel Compression', length=40, bar='checks', spinner='stars', spinner_length = 6, stats=True) as bar:
     for path in newpaths:
@@ -90,6 +95,7 @@ total_old = 0
 global total_new
 total_new = 0
 
+# this function is for calculating the statistics for display after the program runs.
 def calculate_reduction(path1, path2):
     size1 = os.path.getsize(path1)
     size2 = os.path.getsize(path2)
@@ -101,12 +107,15 @@ def calculate_reduction(path1, path2):
     global total_reduction
     total_reduction += sizediff
 
+# The images are resized to meet the required byte size, while maintaining the aspect ratio.
+# images are deleted from the working directory (not the input) after they are resized, so that the whole batch isnt stored three times.
 with alive_bar(len(files), title='Resizing Images', length=40, bar='filling', spinner='radioactive', spinner_length = 11, stats=True) as bar:
     for i in range(len(newpaths)):
         path = newpaths[i]
         pixel_size = pixel_sizes[i]
         newpath = output_path + image_names[i] + '.png'
         im = Image.open(path)
+        # skip if the image is already small enough to be acceptable
         if os.path.getsize(path) <= max_filesize:
             im.save(newpath)
             im.close()
@@ -129,9 +138,10 @@ with alive_bar(len(files), title='Resizing Images', length=40, bar='filling', sp
 
         aspect_ratio = im.size[0] / im.size[1]
 
-        # calculate the new X & Y, thanks to algebra
+        # calculate the new x & y, thanks to algebra
         y = (ideal_pixelcount / aspect_ratio) ** 0.5
         x = aspect_ratio * y
+
         newsize = (int(x),int(y))
         im = im.resize(newsize)
         im.save(newpath)
@@ -141,6 +151,7 @@ with alive_bar(len(files), title='Resizing Images', length=40, bar='filling', sp
         bar()
 
 
+# clean up working directory
 os.rmdir(workingdir)
 
 print("Image reduction successful!")
